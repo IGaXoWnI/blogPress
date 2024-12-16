@@ -1,0 +1,32 @@
+body{
+    
+    color: white;
+    background-color: black;
+}
+
+header{
+    padding: 30px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+
+}
+
+header nav ul{
+    display: flex;
+    gap:60px;
+    
+}
+a{
+    text-decoration: none;
+    color: white;
+}
+
+
+ul li{
+    list-style: none;
+    font-size: 18px;
+    
+}
