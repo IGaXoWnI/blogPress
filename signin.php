@@ -1,4 +1,5 @@
 <?php
+session_start();
 require 'db_connection.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,9 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($user && password_verify($password, $user['user_password'])) {
             session_start();
-            $_SESSION['user_id'] = $user['id']; 
-            $_SESSION['username'] = $user['username'];
+            $_SESSION['user_id'] = $user['user_id']; 
+            $_SESSION['user_email'] = $user['user_email']; 
+            $_SESSION['user_name'] = $user['username']; 
+            $_SESSION['user_role'] = $user['user_role']; 
+
+
+           
             header("Location: index.php");
+            exit; 
         } else {
             echo "Invalid email or password.";
         }
@@ -29,6 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">

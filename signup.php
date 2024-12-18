@@ -6,9 +6,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
+    $role = $_POST['role'] ?? ''; 
+    $currentDateTime = date("Y-m-d H:i:s");
 
 
-    if (empty($username) || empty($email) || empty($password)) {
+
+    
+
+
+    if (empty($username) || empty($email) || empty($password) || empty($role)) {
         echo "All fields are required.";
         exit;
     }
@@ -16,12 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     try {
-        $sql = "INSERT INTO users (username, user_email, user_password) VALUES (:username, :email, :password)";
+        $sql = "INSERT INTO users (username, user_email, user_password, user_role , created_at) VALUES (:username, :email, :password, :role , :create_at)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':username' => $username,
             ':email' => $email,
             ':password' => $hashedPassword,
+            ':role' => $role, 
+            ':create_at' =>$currentDateTime ,
         ]);
         header("Location: signin.php");
     } catch (PDOException $e) {
@@ -95,6 +103,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
+                        
+                        <div class="mt-4">
+                            <div class="group relative rounded-lg border focus-within:border-sky-200 px-3 pb-1.5 pt-2.5 duration-200 focus-within:ring focus-within:ring-sky-300/30">
+                                <div class="flex justify-between">
+                                    <label class="text-xs font-medium text-muted-foreground group-focus-within:text-white text-gray-400">Role</label>
+                                </div>
+                                <select name="role" class="block w-full border-0 bg-transparent p-0 text-sm file:my-1 placeholder:text-muted-foreground/90 focus:outline-none focus:ring-0 focus:ring-teal-500 sm:leading-7 text-foreground">
+                                    <option value="User">User</option>
+                                    <option value="Author">Author</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="mt-4 flex items-center justify-between">
                             <label class="flex items-center gap-2">
                                 <input type="checkbox" name="remember" class="outline-none focus:outline focus:outline-sky-300">
@@ -108,12 +129,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 class="font-semibold hover:bg-black hover:text-white hover:ring hover:ring-white transition duration-300 inline-flex items-center justify-center rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-black h-10 px-4 py-2"
                                 type="submit">Register</button>
                         </div>
-</form>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-    </section>
-
 </body>
 </html>
