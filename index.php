@@ -32,18 +32,27 @@ session_start();
         <nav class="flex gap-6 items-center">
             <ul>
                 <li>Explore</li>
-                <a href="signup.php"><li>Sign Up</li></a>
+                <a id="signup/in" class="" href="signup.php"><li>Sign Up</li></a>
+                <a id="signout" class="hidden" href="signout.php"><li>Sign Out</li></a>
                 <li>Contact</li>
-                 <a href="dashboard.php"><li>Dashboard</li></a>
+                 <a class="" id="dashboard" href="dashboard.php"><li>Dashboard</li></a>
             </ul>
           
-                <img src="assets/search.svg" class="h-10" alt="">
+                
           
            
         </nav>
     </header>
-    <p class="w-full p-4 text-xl font-semibold text-gray-600 mt-0">
+    <div class="w-full px-12 py-8 flex justify_between items_center">
+    <p class="w-full  text-sm font-extralight text-white">
     Latest News for you <?php echo $_SESSION['user_name']; ?> !!</p>
+    <input type="text" name="search" placeholder="Search"
+       autocomplete="off"
+      class="block w-1/4 border-b border-gray-50 opacity-50 bg-transparent p-0 text-sm file:my-1 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:font-medium placeholder:text-muted-foreground/90 focus:outline-none focus:ring-0 sm:leading-7 text-foreground">
+      <img src="assets/search.svg" class="h-8 " alt="">
+    </div>
+    
+
     <section class="w-5/6 m-auto grid grid-cols-3 gap-y-10 place-items-center">
   <div class="relative w-full max-w-xs h-96 bg-gray-300 hover:brightness-100 transition-all duration-300">
     <img src="assets/img.webp" alt="Background Image" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
@@ -78,3 +87,27 @@ session_start();
 </section>
 </body>
 </html>
+
+
+<script>
+  
+  <?php
+if (!empty($_SESSION['user_name'])) {
+    echo "document.getElementById('signup/in').classList.add('hidden');";
+    echo "document.getElementById('signout').classList.remove('hidden');";
+}else{
+  echo "document.getElementById('signup/in').classList.remove('hidden');";
+  echo "document.getElementById('signout').classList.add('hidden');";
+
+}
+
+
+if (!empty($_SESSION['user_role'] !== "Author" )) {
+  
+  echo "document.getElementById('dashboard').classList.add('hidden');";
+}else{
+  echo "document.getElementById('dashboard').classList.remove('hidden');";
+
+}
+?>
+</script>

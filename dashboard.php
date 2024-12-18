@@ -1,3 +1,50 @@
+<?php
+session_start();
+
+include 'db_connection.php'  ;
+ 
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+   
+    $title = $_POST['title'];
+    $subtitle = isset($_POST['subtitle']) ? $_POST['subtitle'] : null; 
+    $content = $_POST['content'];
+    $category = $_POST['category'];
+    $featuredImageUrl = $_POST['featuredImageUrl'];
+    $author_id = $_SESSION['user_id'];
+
+    if (empty($title) || empty($content) || empty($category) || empty($featuredImageUrl)) {
+        echo "Please fill in all required fields.";
+        exit;
+    }
+
+    try {
+
+
+        $sql = "INSERT INTO articles (article_title, article_content, author_id, view_count, like_count, create_at, article_subtitle, category, featured_image_url)
+        VALUES (:title, :content, :author_id, 0, 0, NOW()::timestamp(0), :subtitle, :category, :featuredImageUrl)";
+        $stmt = $pdo->prepare($sql);
+
+        // Bind the parameters
+        $stmt->bindParam(':title', $title);
+        $stmt->bindParam(':content', $content);
+        $stmt->bindParam(':author_id', $author_id);
+        $stmt->bindParam(':subtitle', $subtitle);
+        $stmt->bindParam(':category', $category);
+        $stmt->bindParam(':featuredImageUrl', $featuredImageUrl);
+
+        $stmt->execute();
+
+
+        echo "Article submitted successfully!";
+        header("Location: dashboard.php"); 
+        exit;
+
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,13 +53,10 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <title>Author Panel</title>
     <script>
-        // Function to toggle between pages
         function showPage(pageId) {
-            // Hide all pages
             const pages = document.querySelectorAll('.page');
             pages.forEach(page => page.classList.add('hidden'));
 
-            // Show the selected page
             document.getElementById(pageId).classList.remove('hidden');
         }
     </script>
@@ -70,78 +114,80 @@
     </nav>
     
     <main class="flex-1 p-6">
-        <!-- Add Article Page -->
         <div id="addArticlePage" class="page hidden max-w-4xl mx-auto p-6 bg-black text-white shadow-md rounded-lg">
             <h2 class="text-2xl font-semibold mb-4">Insert Article</h2>
-            <form>
-                <div class="mb-4">
-                    <label for="title" class="block text-sm font-medium">Title</label>
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        class="mt-1 p-3 block w-full rounded-md border-gray-700 bg-gray-900 text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        placeholder="Enter the article title here"
-                    />
-                </div>
+            <form method="POST" action="dashboard.php">
+    <div class="mb-4">
+        <label for="title" class="block text-sm font-medium">Title</label>
+        <input
+            type="text"
+            id="title"
+            name="title"
+            class="mt-1 p-3 block w-full rounded-md border-gray-700 bg-gray-900 text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="Enter the article title here"
+            required
+        />
+    </div>
 
-                <div class="mb-4">
-                    <label for="subtitle" class="block text-sm font-medium">Subtitle</label>
-                    <input
-                        type="text"
-                        id="subtitle"
-                        name="subtitle"
-                        class="mt-1 p-3 block w-full rounded-md border-gray-700 bg-gray-900 text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        placeholder="Enter a subtitle or brief summary"
-                    />
-                </div>
+    <div class="mb-4">
+        <label for="subtitle" class="block text-sm font-medium">Subtitle (Optional)</label>
+        <input
+            type="text"
+            id="subtitle"
+            name="subtitle"
+            class="mt-1 p-3 block w-full rounded-md border-gray-700 bg-gray-900 text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="Enter a subtitle or brief summary"
+        />
+    </div>
 
-                <div class="mb-4">
-                    <label for="content" class="block text-sm font-medium">Content</label>
-                    <textarea
-                        id="content"
-                        name="content"
-                        rows="6"
-                        class="mt-1 p-3 block w-full rounded-md border-gray-700 bg-gray-900 text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        placeholder="Write your article here..."
-                    ></textarea>
-                </div>
+    <div class="mb-4">
+        <label for="content" class="block text-sm font-medium">Content</label>
+        <textarea
+            id="content"
+            name="content"
+            rows="6"
+            class="mt-1 p-3 block w-full rounded-md border-gray-700 bg-gray-900 text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="Write your article here..."
+            required
+        ></textarea>
+    </div>
 
-                <div class="mb-4">
-                    <label for="category" class="block text-sm font-medium">Category</label>
-                    <select
-                        id="category"
-                        name="category"
-                        class="mt-1 p-3 block w-full rounded-md border-gray-700 bg-gray-900 text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    >
-                        <option value="news">News</option>
-                        <option value="opinion">Opinion</option>
-                        <option value="technology">Technology</option>
-                        <option value="lifestyle">Lifestyle</option>
-                    </select>
-                </div>
+    <div class="mb-4">
+        <label for="category" class="block text-sm font-medium">Category</label>
+        <select
+            id="category"
+            name="category"
+            class="mt-1 p-3 block w-full rounded-md border-gray-700 bg-gray-900 text-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            required
+        >
+            <option value="news">News</option>
+            <option value="opinion">Opinion</option>
+            <option value="technology">Technology</option>
+            <option value="lifestyle">Lifestyle</option>
+        </select>
+    </div>
 
-                <div class="mb-4">
-                    <label for="featuredImageUrl" class="block text-sm font-medium text-white">Featured Image URL</label>
-                    <input
-                        type="url"
-                        id="featuredImageUrl"
-                        name="featuredImageUrl"
-                        placeholder="Enter the URL of the featured image"
-                        class="mt-1 p-3 block w-full bg-black text-white border border-gray-600 rounded-md shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                        required
-                    />
-                </div>
+    <div class="mb-4">
+        <label for="featuredImageUrl" class="block text-sm font-medium text-white">Featured Image URL</label>
+        <input
+            type="url"
+            id="featuredImageUrl"
+            name="featuredImageUrl"
+            placeholder="Enter the URL of the featured image"
+            class="mt-1 p-3 block w-full bg-black text-white border border-gray-600 rounded-md shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500"
+            required
+        />
+    </div>
 
-                <div>
-                    <button
-                        type="submit"
-                        class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Submit Article
-                    </button>
-                </div>
-            </form>
+    <div>
+        <button
+            type="submit"
+            class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+            Submit Article
+        </button>
+    </div>
+</form>
         </div>
     </main>
 </body>
