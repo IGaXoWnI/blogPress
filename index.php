@@ -1,6 +1,14 @@
 <?php
 session_start(); 
 
+require_once 'db_connection.php';
+
+try {
+    $stmt = $pdo->query("SELECT article_id, article_title, featured_image_url FROM articles ORDER BY create_at DESC");
+    $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
 
 // $user_id = $_SESSION['user_id'];
 // $user_email = $_SESSION['user_email'];
@@ -49,37 +57,19 @@ session_start();
     
 
     <section class="w-5/6 m-auto grid grid-cols-3 gap-y-10 place-items-center">
-  <div class="relative w-full max-w-xs h-96 bg-gray-300 hover:brightness-100 transition-all duration-300">
-    <img src="assets/img.webp" alt="Background Image" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
-    <div class="absolute bottom-0 w-full  text-white text-center py-4">
-      <h2 class="text-lg font-semibold">4Freestyle x EA Sports</h2>
-    </div>
-  </div>
-
-  <div class="relative w-full max-w-xs h-96 bg-gray-300 hover:brightness-100 transition-all duration-300">
-    <img src="assets/img1.webp" alt="Background Image" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
-    <div class="absolute bottom-0 w-full  text-white text-center py-4">
-      <h2 class="text-lg font-semibold">Off-Pitch and Oslo street football
-      center</h2>
-    </div>
-  </div>
-
-  <div class="relative w-full max-w-xs h-96 bg-gray-300 hover:brightness-100 transition-all duration-300">
-    <img src="assets/img2.webp" alt="Background Image" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
-    <div class="absolute bottom-0 w-full  text-white text-center py-4">
-      <h2 class="text-lg font-semibold">We Made it to Barcelona</h2>
-    </div>
-  </div>
-
-
-  <div class="relative w-full max-w-xs h-96 bg-gray-300 hover:brightness-100 transition-all duration-300">
-    <img src="assets/img2.webp" alt="Background Image" class="absolute inset-0 w-full h-full object-cover filter brightness-50">
-    <div class="absolute bottom-0 w-full  text-white text-center py-4">
-      <h2 class="text-lg font-semibold">We Made it to Barcelona</h2>
-    </div>
-  </div>
-  
-</section>
+        <?php foreach ($articles as $article): ?>
+        <div class="relative w-full max-w-xs h-96 bg-gray-300 hover:brightness-100 transition-all duration-300">
+            <a href="details.php?id=<?php echo $article['article_id']; ?>">
+                <img src="<?php echo htmlspecialchars($article['featured_image_url']); ?>" 
+                     alt="<?php echo htmlspecialchars($article['article_title']); ?>" 
+                     class="absolute inset-0 w-full h-full object-cover filter brightness-50">
+                <div class="absolute bottom-0 w-full text-white text-center py-4">
+                    <h2 class="text-lg font-semibold"><?php echo htmlspecialchars($article['article_title']); ?></h2>
+                </div>
+            </a>
+        </div>
+        <?php endforeach; ?>
+    </section>
 </body>
 </html>
 

@@ -43,11 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-$articlesQuery = "SELECT a.article_id,a.category, a.article_title, a.create_at, u.username 
+$articlesQuery = "SELECT a.article_id, a.category, a.article_title, a.create_at, u.username 
                  FROM articles a 
                  JOIN users u ON a.author_id = u.user_id 
+                 WHERE a.author_id = :user_id
                  ORDER BY a.create_at DESC";
-$stmt = $pdo->query($articlesQuery);
+$stmt = $pdo->prepare($articlesQuery);
+$stmt->bindParam(':user_id', $_SESSION['user_id']);
+$stmt->execute();
 $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -220,8 +223,8 @@ $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($article['username']); ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($article['create_at']); ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                    <button class="text-blue-400 hover:text-blue-300 mr-2">Edit</button>
-                                    <button class="text-red-400 hover:text-red-300">Delete</button>
+                                    <button id="<?php echo $article['article_id']; ?>" class="text-blue-400 hover:text-blue-300 mr-2">Edit</button>
+                                    <button id="<?php echo $article['article_id']; ?>" class="text-red-400 hover:text-red-300">Delete</button>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

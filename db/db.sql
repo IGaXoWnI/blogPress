@@ -33,6 +33,7 @@ CREATE TABLE comments(
     comment_id BIGSERIAL NOT NULL PRIMARY KEY , 
     article_id BIGINT REFERENCES articles(article_id) ,
     user_id BIGINT REFERENCES users(user_id) ,
-    comment_content TEXT NOT NULL 
+    comment_content TEXT NOT NULL ,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
