@@ -9,11 +9,6 @@ session_start();
 
 
 
-// echo "User id: " . $user_id . "<br>";
-// echo "User email: " . $user_email . "<br>";
-// echo "User username: " . $user_name . "<br>";
-// echo "User role: " . $user_role . "<br>";
-
 ?>
 
 <!DOCTYPE html>

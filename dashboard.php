@@ -2,7 +2,7 @@
 session_start();
 
 include 'db_connection.php'  ;
- 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
    
     $title = $_POST['title'];
@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         VALUES (:title, :content, :author_id, 0, 0, NOW()::timestamp(0), :subtitle, :category, :featuredImageUrl)";
         $stmt = $pdo->prepare($sql);
 
-        // Bind the parameters
         $stmt->bindParam(':title', $title);
         $stmt->bindParam(':content', $content);
         $stmt->bindParam(':author_id', $author_id);
@@ -43,6 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo "Error: " . $e->getMessage();
     }
 }
+
+$articlesQuery = "SELECT a.article_id,a.category, a.article_title, a.create_at, u.username 
+                 FROM articles a 
+                 JOIN users u ON a.author_id = u.user_id 
+                 ORDER BY a.create_at DESC";
+$stmt = $pdo->query($articlesQuery);
+$articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -188,6 +194,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </button>
     </div>
 </form>
+        </div>
+
+        <div id="activeInactivePage" class="page hidden">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-2xl font-semibold mb-6">Article Management</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-gray-900 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Article Category</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Author</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Created At</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800">
+                            <?php foreach ($articles as $article): ?>
+                            <tr class="hover:bg-gray-800">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($article['article_id']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($article['category']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($article['article_title']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($article['username']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($article['create_at']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                    <button class="text-blue-400 hover:text-blue-300 mr-2">Edit</button>
+                                    <button class="text-red-400 hover:text-red-300">Delete</button>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </main>
 </body>
