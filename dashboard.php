@@ -36,6 +36,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+$statsQuery = "SELECT  
+    SUM(view_count) as total_views,
+    SUM(like_count) as total_likes,
+    COUNT(DISTINCT c.comment_id) as total_comments
+FROM articles a 
+LEFT JOIN comments c ON a.article_id = c.article_id
+WHERE a.author_id = :user_id";
+
+$stmt = $pdo->prepare($statsQuery);
+$stmt->bindParam(':user_id', $_SESSION['user_id']);
+$stmt->execute();
+$stats = $stmt->fetch(PDO::FETCH_ASSOC);
+
 $articlesQuery = "SELECT a.article_id, a.category, a.article_title, a.create_at, u.username 
                  FROM articles a 
                  JOIN users u ON a.author_id = u.user_id 
@@ -286,6 +299,82 @@ $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
         </div>
+
+        <div id="statistics" class="page hidden">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-2xl font-semibold mb-6">Statistics Overview</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div class="bg-gray-900 p-6 rounded-lg">
+                        <div class="flex flex-col space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Total Views</span>
+                                <span class="text-2xl font-bold"><?php echo number_format($stats['total_views'] ?? 0); ?></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Total Likes</span>
+                                <span class="text-2xl font-bold"><?php echo number_format($stats['total_likes'] ?? 0); ?></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Total Comments</span>
+                                <span class="text-2xl font-bold"><?php echo number_format($stats['total_comments'] ?? 0); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+ 
+                    <div class="bg-gray-900 p-6 rounded-lg">
+                        <canvas id="statsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            
+            const statsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Views', 'Likes', 'Comments'],
+                    datasets: [{
+                        data: [
+                            <?php echo $stats['total_views'] ?? 0; ?>,
+                            <?php echo $stats['total_likes'] ?? 0; ?>,
+                            <?php echo $stats['total_comments'] ?? 0; ?>
+                        ],
+                        backgroundColor: '#4F46E5'
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    <script>
+        // Show statistics page when dashboard loads
+        window.onload = function() {
+            showPage('statistics');
+        }
+    </script>
 </body>
 </html>

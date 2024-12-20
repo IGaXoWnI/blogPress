@@ -10,11 +10,6 @@ try {
     echo "Error: " . $e->getMessage();
 }
 
-// $user_id = $_SESSION['user_id'];
-// $user_email = $_SESSION['user_email'];
-// $user_name = $_SESSION['user_name'];
-// $user_role = $_SESSION['user_role'];
-
 
 
 ?>
@@ -38,7 +33,7 @@ try {
                 <a id="signup/in" class="" href="auth/signup.php"><li>Sign Up</li></a>
                 <a id="signout" class="hidden" href="auth/signout.php"><li>Sign Out</li></a>
                 <li>Contact</li>
-                 <a class="" id="dashboard" href="dashboard.php"><li>Dashboard</li></a>
+                 <a class="" id="dashboard" href="dashboard.php?page=statistics"><li>Dashboard</li></a>
             </ul>
           
                 
@@ -93,3 +88,13 @@ if (empty($_SESSION['user_role']) || $_SESSION['user_role'] !== "Author") {
 ?>
 </script>
 
+<footer class="bg-gray-900 text-white py-6 mt-8">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <div class="flex justify-center space-x-6 mb-4">
+            <a href="#" class="text-gray-400 hover:text-white">Twitter</a>
+            <a href="#" class="text-gray-400 hover:text-white">Instagram</a>
+            <a href="#" class="text-gray-400 hover:text-white">GitHub</a>
+        </div>
+        <p class="text-gray-400 text-sm">&copy; <?php echo date('Y'); ?> Blog</p>
+    </div>
+</footer>
