@@ -1,8 +1,14 @@
+*{
+    font-family: 'Bebas Neue', sans-serif;
+
+}
+
 body{
     
     color: white;
     background-color: black;
 }
+
 
 header{
     padding: 30px 50px;
@@ -30,6 +36,22 @@ ul li{
     list-style: none;
     font-size: 18px;
     
+}
+
+
+.prose {
+    font-family: futura-lt-w01-light, futura-lt-w05-light, sans-serif;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+}
+
+.prose p {
+    font-family: futura-lt-w01-light, futura-lt-w05-light, sans-serif;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+
 }
 
 

@@ -1,5 +1,5 @@
 <?php
-require 'db_connection.php'; 
+require '../conn/db_connection.php'; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -44,13 +44,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <title>SignUp</title>
 </head>
 <body>
 <header>
-        <a href="index.php"><h1 class = "title">Blog</h1></a>
+        <a href="../index.php"><h1 class = "title">Blog</h1></a>
         <nav>
             <ul>
                 <li>Explore</li>

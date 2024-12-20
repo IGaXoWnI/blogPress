@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-require_once 'db_connection.php';
+require_once 'conn/db_connection.php';
 
 // Get article ID from URL and validate
 $article_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -15,6 +15,10 @@ try {
         header('Location: index.php');
         exit();
     }
+
+    // Increment view count
+    $updateViews = $pdo->prepare("UPDATE articles SET view_count = view_count + 1 WHERE article_id = ?");
+    $updateViews->execute([$article_id]);
 } catch(PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
@@ -148,6 +152,8 @@ if (!empty($_SESSION['user_id'])) {
                 </button>
             </form>
             <span class="text-gray-400"><?php echo $article['like_count']; ?> likes</span>
+            <span class="text-gray-400">•</span>
+            <span class="text-gray-400"><?php echo $article['view_count']; ?> views</span>
         </div>
 
         <div class="mt-12 border-t border-gray-700 pt-8">

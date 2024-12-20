@@ -1,10 +1,14 @@
 <?php
 session_start();
 
-include 'db_connection.php'  ;
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+include 'conn/db_connection.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-   
     $title = $_POST['title'];
     $subtitle = isset($_POST['subtitle']) ? $_POST['subtitle'] : null; 
     $content = $_POST['content'];
@@ -12,32 +16,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $featuredImageUrl = $_POST['featuredImageUrl'];
     $author_id = $_SESSION['user_id'];
 
-    if (empty($title) || empty($content) || empty($category) || empty($featuredImageUrl)) {
-        echo "Please fill in all required fields.";
-        exit;
-    }
-
     try {
-
-
         $sql = "INSERT INTO articles (article_title, article_content, author_id, view_count, like_count, create_at, article_subtitle, category, featured_image_url)
-        VALUES (:title, :content, :author_id, 0, 0, NOW()::timestamp(0), :subtitle, :category, :featuredImageUrl)";
+                VALUES (:title, :content, :author_id, 0, 0, NOW()::timestamp(0), :subtitle, :category, :featuredImageUrl)";
         $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':title' => $title,
+            ':content' => $content,
+            ':author_id' => $author_id,
+            ':subtitle' => $subtitle,
+            ':category' => $category,
+            ':featuredImageUrl' => $featuredImageUrl
+        ]);
 
-        $stmt->bindParam(':title', $title);
-        $stmt->bindParam(':content', $content);
-        $stmt->bindParam(':author_id', $author_id);
-        $stmt->bindParam(':subtitle', $subtitle);
-        $stmt->bindParam(':category', $category);
-        $stmt->bindParam(':featuredImageUrl', $featuredImageUrl);
-
-        $stmt->execute();
-
-
-        echo "Article submitted successfully!";
-        header("Location: dashboard.php"); 
+        header("Location: dashboard.php");
         exit;
-
     } catch (PDOException $e) {
         echo "Error: " . $e->getMessage();
     }
@@ -52,6 +45,19 @@ $stmt = $pdo->prepare($articlesQuery);
 $stmt->bindParam(':user_id', $_SESSION['user_id']);
 $stmt->execute();
 $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$commentsQuery = "SELECT c.comment_id, c.comment_content, created_at, c.article_id, 
+                        a.article_title, u.username as commenter_username
+                 FROM comments c
+                 JOIN articles a ON c.article_id = a.article_id
+                 JOIN users u ON c.user_id = u.user_id
+                 WHERE a.author_id = :user_id
+                 ORDER BY created_at DESC";
+
+$stmt = $pdo->prepare($commentsQuery);
+$stmt->bindParam(':user_id', $_SESSION['user_id']);
+$stmt->execute();
+$comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -69,6 +75,7 @@ $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
             document.getElementById(pageId).classList.remove('hidden');
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="flex bg-black text-white">
     <nav class="bg-gray-800 shadow-xl h-screen sticky top-0 left-0 min-w-[250px] py-6 px-4 font-[sans-serif] overflow-auto">
@@ -102,6 +109,11 @@ $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <span id="statistic">Statistics</span>
                         </a>
                     </li>
+                    <li>
+                        <a onclick="showPage('commentsPage')" href="javascript:void(0)" class="text-sm flex items-center hover:text-blue-400 transition-all">
+                            <span id="comments">Comments Management</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
             <hr class="my-6 border-gray-700" />
@@ -113,10 +125,9 @@ $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </a>
                     </li>
                     <li>
-                        <a href="javascript:void(0)" class="text-sm flex items-center hover:text-blue-400 transition-all">
-                            <span>Logout</span>
-                        </a>
+                        <a id="signout/in" class="" href="index.php"><li>sign out</li></a>
                     </li>
+                    
                 </ul>
             </div>
         </div>
@@ -223,8 +234,50 @@ $articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($article['username']); ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($article['create_at']); ?></td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                    <button id="<?php echo $article['article_id']; ?>" class="text-blue-400 hover:text-blue-300 mr-2">Edit</button>
-                                    <button id="<?php echo $article['article_id']; ?>" class="text-red-400 hover:text-red-300">Delete</button>
+                                    <a href="crud/edit_article.php?id=<?php echo $article['article_id']; ?>" 
+                                       class="text-blue-400 hover:text-blue-300 mr-4">Update</a>
+                                    <form method="POST" action="crud/delete_article.php" style="display: inline;">
+                                        <input type="hidden" name="article_id" value="<?php echo $article['article_id']; ?>">
+                                        <button type="submit" class="text-red-400 hover:text-red-300">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="commentsPage" class="page hidden">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-2xl font-semibold mb-6">Comments Management</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-gray-900 rounded-lg overflow-hidden">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Comment ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Article Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Commenter</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Comment</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800">
+                            <?php foreach ($comments as $comment): ?>
+                            <tr class="hover:bg-gray-800">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($comment['comment_id']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($comment['article_title']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($comment['commenter_username']); ?></td>
+                                <td class="px-6 py-4 text-sm text-gray-300"><?php echo htmlspecialchars($comment['comment_content']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><?php echo htmlspecialchars($comment['created_at']); ?></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                    <form method="POST" action="crud/delete_comment.php" style="display: inline;">
+                                        <input type="hidden" name="comment_id" value="<?php echo $comment['comment_id']; ?>">
+                                        <button type="submit" onclick="return confirm('Are you sure you want to delete this comment?')" 
+                                                class="text-red-400 hover:text-red-300">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

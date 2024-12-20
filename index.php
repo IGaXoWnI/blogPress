@@ -1,7 +1,7 @@
 <?php
 session_start(); 
 
-require_once 'db_connection.php';
+require_once 'conn/db_connection.php';
 
 try {
     $stmt = $pdo->query("SELECT article_id, article_title, featured_image_url FROM articles ORDER BY create_at DESC");
@@ -35,8 +35,8 @@ try {
         <nav class="flex gap-6 items-center">
             <ul>
                 <li>Explore</li>
-                <a id="signup/in" class="" href="signup.php"><li>Sign Up</li></a>
-                <a id="signout" class="hidden" href="signout.php"><li>Sign Out</li></a>
+                <a id="signup/in" class="" href="auth/signup.php"><li>Sign Up</li></a>
+                <a id="signout" class="hidden" href="auth/signout.php"><li>Sign Out</li></a>
                 <li>Contact</li>
                  <a class="" id="dashboard" href="dashboard.php"><li>Dashboard</li></a>
             </ul>
@@ -70,7 +70,7 @@ try {
         </div>
         <?php endforeach; ?>
     </section>
-</body>
+
 </html>
 
 
@@ -80,19 +80,16 @@ try {
 if (!empty($_SESSION['user_name'])) {
     echo "document.getElementById('signup/in').classList.add('hidden');";
     echo "document.getElementById('signout').classList.remove('hidden');";
-}else{
-  echo "document.getElementById('signup/in').classList.remove('hidden');";
-  echo "document.getElementById('signout').classList.add('hidden');";
-
+} else {
+    echo "document.getElementById('signup/in').classList.remove('hidden');";
+    echo "document.getElementById('signout').classList.add('hidden');";
 }
 
-
-if (!empty($_SESSION['user_role'] !== "Author" )) {
-  
-  echo "document.getElementById('dashboard').classList.add('hidden');";
-}else{
-  echo "document.getElementById('dashboard').classList.remove('hidden');";
-
+if (empty($_SESSION['user_role']) || $_SESSION['user_role'] !== "Author") {
+    echo "document.getElementById('dashboard').classList.add('hidden');";
+} else {
+    echo "document.getElementById('dashboard').classList.remove('hidden');";
 }
 ?>
 </script>
+
